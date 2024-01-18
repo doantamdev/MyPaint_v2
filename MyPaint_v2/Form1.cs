@@ -13,27 +13,26 @@ namespace MyPaint_v2
 {
     public partial class Form1 : Form
     {
+        protected Graphics _graphic;
+        protected Point _aPoint;
+        protected Point _sPoint;
+        protected bool _moving;
+        protected Color _penColorBorder = Color.Black;
+        protected Color _penColorInSide = Color.Empty;
+        protected Color _penColorBrush = Color.Black;
+        protected LinkedList<Shape> _shapes;
 
-        private Graphics _graphic;
-        private Point _aPoint;
-        private Point _sPoint;
-        private bool _moving;
-        private Color _penColorBorder = Color.Black;
-        private Color _penColorInSide = Color.White;
-        private LinkedList<MyRectangle> _rectangles;
         public Form1()
         {
             InitializeComponent();
-
             _graphic = mainPanel.CreateGraphics();
             _aPoint = new Point(-1, -1);
             _sPoint = new Point(-1, -1);
             _moving = false;
-            _rectangles = new LinkedList<MyRectangle>();
-        
+            _shapes = new LinkedList<Shape>();
 
         }
-   
+
 
         private void mainPanel_MouseDown(object sender, MouseEventArgs e)
         {
@@ -43,52 +42,107 @@ namespace MyPaint_v2
 
         private void mainPanel_MouseMove(object sender, MouseEventArgs e)
         {
-            if (!_moving || (_sPoint == _aPoint)) { return; }
-            RefreshPanel();
-            int penWidth = (int)inpPenWidth.Value;
-            if(!ckbColor.Checked)
+            if (!_moving || (_sPoint == _aPoint))
             {
-                _penColorInSide = Color.White;
+                return;
             }
-            MyRectangle rect = new MyRectangle(_sPoint, e.Location, penWidth, _penColorBorder);
-            rect.FillColor = _penColorInSide;
-            rect.Draw(_graphic);
-           
-        }
 
+            RefreshPanel();
+
+            Shape s = GetShape(e.Location);
+            //MessageBox.Show(s.ToString());
+            s.Draw(_graphic);
+        }
         private void mainPanel_MouseUp(object sender, MouseEventArgs e)
         {
-            int penWidth = (int)inpPenWidth.Value;
-            MyRectangle rect = new MyRectangle(_sPoint, e.Location, penWidth, _penColorBorder);
-            rect.FillColor = _penColorInSide;
-            _rectangles.AddLast(rect);
+            Shape s = GetShape(e.Location);
+            _shapes.AddLast(s);
+
             _sPoint.X = -1;
             _sPoint.Y = -1;
             _moving = false;
-
         }
 
         private void RefreshPanel()
         {
             _graphic.Clear(Color.White);
-            foreach (MyRectangle rect in _rectangles)
+
+            foreach (Shape s in _shapes)
             {
-                rect.Draw(_graphic);
+              s.Draw(_graphic);
             }
         }
 
         private void btnColor_Click(object sender, EventArgs e)
         {
             cdPenColor.ShowDialog();
-            Color color = cdPenColor2.Color;
-            _penColorBorder = cdPenColor2.Color;
+            Color color = cdPenColor.Color;
+            _penColorBorder = cdPenColor.Color;
         }
 
         private void btnColor2_Click(object sender, EventArgs e)
         {
-            cdPenColor2.ShowDialog();
-            Color color = cdPenColor2.Color;
-            _penColorInSide = cdPenColor2.Color;
+            cdPenColorInside.ShowDialog();
+            Color color = cdPenColorInside.Color;
+            _penColorInSide = cdPenColorInside.Color;
+        }
+
+        private void btnColor3_Click(object sender, EventArgs e)
+        {
+            cdBrushColor.ShowDialog();
+            Color color = cdBrushColor.Color;
+            _penColorBrush = cdBrushColor.Color;
+        }
+
+        public Shape GetShape(Point ePoint)
+        {
+            int penWidth = (int)inpPenWidth.Value;
+            if (!ckbColor.Checked)
+            {
+                _penColorInSide = Color.Empty;
+            }
+
+            Shape s ;
+
+            if (rbRectangle.Checked)
+            {
+                if (rbNoFill.Checked)
+                {
+                    s = new MyRectangle(_sPoint, ePoint, penWidth, _penColorBorder, _penColorInSide);
+                }
+                else if (rbColorFill.Checked)
+                {
+                    s = new MyRectangle(_sPoint, ePoint, penWidth, _penColorBorder, _penColorInSide);
+
+                }
+                else
+                {                 
+                    s = new PatternRectangle(_sPoint, ePoint, penWidth, _penColorBorder, _penColorInSide, _penColorBrush);
+                }
+            }
+            else
+            {
+                if (rbNoFill.Checked)
+                {
+                    s = new MyCircle(_sPoint, ePoint, penWidth, _penColorBorder, _penColorInSide);
+                }
+                else if (rbColorFill.Checked)
+                {
+                    s = new MyCircle(_sPoint, ePoint, penWidth, _penColorBorder, _penColorInSide);
+                }
+                else
+                {               
+                    s = new PatternCircle(_sPoint, ePoint, penWidth, _penColorBorder, _penColorInSide, _penColorBrush);
+                }
+            }
+
+            return s;
+
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Console.WriteLine();
         }
     }
 }

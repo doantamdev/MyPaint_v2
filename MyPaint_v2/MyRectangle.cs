@@ -8,51 +8,36 @@ using System.Threading.Tasks;
 
 namespace MyPaint_v2
 {
-    internal class MyRectangle
+    public class MyRectangle : Shape
     {
-        public Point location;
-        public int width;
-        public int height;
-        public int bordersWidth;
-        public Color borderColor;
-        public Point StartPoint { get; set; }
-        public Point EndPoint { get; set; }
-        public int BordersWidth { get; set; }
-        public Color BorderColor { get; set; }
+        protected int _width;
+        protected int _height;
+        protected Color _colorFill;
 
-        public bool IsColor { get; set; }
 
-        public Color FillColor { get; set; } = Color.Empty;
-
-        public MyRectangle()
+        public MyRectangle(Point sPoint, Point ePoint, int borderWidth, Color borderColor, Color bgColor)
+             : base(sPoint, ePoint, borderWidth, borderColor, bgColor)
         {
-
+            _width = ePoint.X - sPoint.X;
+            _height = ePoint.Y - sPoint.Y;
+            _borderColor = borderColor;
+            _borderWidth = borderWidth;
+            _colorFill = bgColor;
         }
 
-        public MyRectangle(Point sPoint, Point ePoint, int borderWidth, Color borderColor)
-        {
-            StartPoint = sPoint;
-            EndPoint = ePoint;
-            BordersWidth = borderWidth;
-            BorderColor = borderColor;
-        }
 
-        public void Draw(Graphics g)
+        public override void Draw(Graphics g)
         {
-            Pen pen = new Pen(BorderColor, BordersWidth);
-            Rectangle rect = new Rectangle(StartPoint.X, StartPoint.Y, EndPoint.X - StartPoint.X, EndPoint.Y - StartPoint.Y);
-
+            Pen p = new Pen(_borderColor, _borderWidth);
+            Rectangle rect = new Rectangle(_location, new Size(_width, _height));
+            if (_colorFill != Color.Empty)
             {
-                if (FillColor != Color.Empty)
+                using (Brush brush = new SolidBrush(_colorFill))
                 {
-                    using (Brush brush = new SolidBrush(FillColor))
-                    {
-                        g.FillRectangle(brush, rect);
-                    }
+                    g.FillRectangle(brush, rect);
                 }
-
-                g.DrawRectangle(pen, rect);
             }
+            g.DrawRectangle(p, rect);
         }
     }
 }

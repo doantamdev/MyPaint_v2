@@ -8,32 +8,36 @@ using System.Threading.Tasks;
 
 namespace MyPaint_v2
 {
-    internal class MyCircle : Shape
+    public class MyCircle : Shape
     {
         private float _radius;
-        public MyCircle(Point sPoint, Point ePoint, int borderWidth, Color borderColor)
-            : base(sPoint, ePoint, borderWidth, borderColor)
+        protected int _width;
+        protected int _height;
+        protected int _bordersWidth;
+        protected Color _colorFill;
+        public MyCircle(Point sPoint, Point ePoint, int borderWidth, Color borderColor, Color colorFill)
+            : base(sPoint, ePoint, borderWidth, borderColor, colorFill)
         {
-            _radius = sPoint.X;
+            _radius =sPoint.X;
+            _bordersWidth = borderWidth;
+            _borderColor = borderColor;
+            _colorFill = colorFill;
         }
+
+       
 
         public override void Draw(Graphics g)
         {
-            Pen pen = new Pen(_borderColor, _borderWidth);
-
-            SizeF size = new SizeF(_radius, _radius);
-            RectangleF cirle = new RectangleF(_location, size);
-
-            SolidBrush brush = new SolidBrush(_bgColor);
-
-            if (_isPattern)
+            Pen p = new Pen(_borderColor,_borderWidth);
+            RectangleF circle = new RectangleF(_location, new SizeF(_radius, _radius));
+            if (_colorFill != Color.Empty)
             {
-                HatchBrush hatchBrush = new HatchBrush(HatchStyle.LargeGrid, _borderColor, _borderColor);
-                //g.FillRectangle(hatchBrush, rect);
+                using (Brush brush = new SolidBrush(_colorFill))
+                {
+                    g.FillEllipse(brush, circle);
+                }
             }
-
-            g.FillEllipse(brush, cirle);
-            g.DrawEllipse(pen, cirle);
+            g.DrawEllipse(p, circle);
         }
     }
 }
